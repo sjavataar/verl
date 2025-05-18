@@ -103,8 +103,9 @@ def build_memory_reference_from_module(module: torch.nn.Module, memory_buffers: 
     for name, param in sorted(module.named_parameters()):
         memory_buffer = memory_buffers[param.dtype]
         buffer = memory_buffer.get(shape=param.shape, start_index=start_index[param.dtype])
-        # need to increment start_index
-        start_index[param.dtype] += calc_padded_numel(param.shape, dtype)
+        # need to increment start_index. Make sure to use param.dtype
+        # since each dtype has its own buffer alignment.
+        start_index[param.dtype] += calc_padded_numel(param.shape, param.dtype)
         if maintain_weight:
             buffer.copy_(param.data)
         param.data = buffer
